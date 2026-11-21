@@ -192,6 +192,23 @@ Releases were broken on purpose to test the rollback and practise finding root c
 - A pipeline that runs diagnostics before rolling back leaves evidence in the build log instead of losing it.
 - Editing the wrong file (a Service manifest pasted into `deployment.yaml`) produced a misleading image pull error. Verify file contents with `cat` or `grep` before debugging deeper.
 
+## Pause and resume
+
+Stop the containers when you are done for the day. The cluster state, the registry images and the Jenkins data (`jenkins_home` volume) are kept.
+
+```bash
+docker stop jenkins kind-registry cicd-control-plane
+```
+
+Start everything again later:
+
+```bash
+docker start kind-registry cicd-control-plane jenkins
+kubectl get nodes
+```
+
+The node should show `Ready` after a short wait. If `docker` commands fail, check that Docker Desktop is running and not paused.
+
 ## Cost and cleanup
 
 Everything runs locally, so there is no cloud cost. To remove it all:
