@@ -49,7 +49,7 @@ pipeline {
     }
 
         post {
-                    failure {
+        failure {
             script {
                 if (env.DEPLOY_STARTED == 'true') {
                     echo 'Deployment failed. Collecting diagnostics, then rolling back.'
@@ -69,7 +69,6 @@ pipeline {
                 }
             }
         }
-       }
         success {
             echo "Build ${BUILD_NUMBER} deployed successfully."
         }
