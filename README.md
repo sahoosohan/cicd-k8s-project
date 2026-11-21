@@ -174,7 +174,7 @@ Releases were broken on purpose to test the rollback and practise finding root c
 
 | # | Experiment | Symptom | Where I looked | Root cause | Result |
 |---|---|---|---|---|---|
-| 1 | App raises an exception on startup | Deploy stage timed out, build failed | Console output, pod status, events, pod logs | `RuntimeError` at startup (visible in pod logs) | Rollback ran automatically; old pods kept serving. First run exposed the double-revision issue described above, fixed in the Jenkinsfile |
+| 1 | App raises an exception on startup | Deploy stage timed out, build failed | Console output, pod status, events, pod logs | `RuntimeError` at startup (visible in pod logs) | Build 11 crashed on startup, the pipeline captured pod logs and rolled back automatically to build 9 (verified in the revision history). Build 12 deployed healthy after reverting the commit. Old pods kept serving throughout. An earlier run had rolled back to `:v1` because of duplicate revisions, fixed in the Jenkinsfile |
 | 2 | `/health` returns HTTP 500 | _planned_ | _planned_ | Expected: readiness probe failures in pod events | _planned_ |
 | 3 | Non-existent image tag | _planned_ | _planned_ | Expected: `Failed to pull image ... not found` in pod events | _planned_ |
 
