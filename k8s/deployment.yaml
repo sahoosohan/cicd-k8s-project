@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: cicd-demo
-          image: cicd-demo:v1
+          image: localhost:5001/cicd-demo:v1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5000
