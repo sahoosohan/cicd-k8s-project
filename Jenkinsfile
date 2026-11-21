@@ -31,7 +31,7 @@ pipeline {
                 sh '''
                     kubectl apply -f k8s/
                     kubectl set image deployment/cicd-demo cicd-demo=$REGISTRY/$IMAGE:$BUILD_NUMBER
-                    kubectl rollout status deployment/cicd-demo --timeout=120s
+                    kubectl rollout status deployment/cicd-demo --timeout=90s
                 '''
             }
         }
@@ -39,10 +39,31 @@ pipeline {
         stage('Verify') {
             steps {
                 sh '''
+                    sleep 5
                     kubectl get pods -l app=cicd-demo
                     curl -fsS http://cicd-control-plane:30080/health
                 '''
             }
+        }
+    }
+
+        post {
+        failure {
+            echo 'Deployment failed. Collecting diagnostics, then rolling back.'
+            sh '''
+                echo "=== Pod status ==="
+                kubectl get pods -l app=cicd-demo || true
+                echo "=== Pod events ==="
+                kubectl describe pods -l app=cicd-demo | grep -A15 "Events:" || true
+                echo "=== Pod logs ==="
+                kubectl logs -l app=cicd-demo --tail=50 --all-containers || true
+                echo "=== Rolling back ==="
+                kubectl rollout undo deployment/cicd-demo || true
+                kubectl rollout status deployment/cicd-demo --timeout=90s || true
+            '''
+        }
+        success {
+            echo "Build ${BUILD_NUMBER} deployed successfully."
         }
     }
 }
