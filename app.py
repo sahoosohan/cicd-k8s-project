@@ -1,5 +1,4 @@
 from flask import Flask
-raise RuntimeError("simulated startup crash")
 app = Flask(__name__)
 
 @app.route("/")
