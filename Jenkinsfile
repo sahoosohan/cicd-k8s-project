@@ -53,17 +53,11 @@ pipeline {
             script {
                 if (env.DEPLOY_STARTED == 'true') {
                     echo 'Deployment failed. Collecting diagnostics, then rolling back.'
-                    sh '''
-                        echo "=== Pod status ==="
-                        kubectl get pods -l app=cicd-demo || true
-                        echo "=== Pod events ==="
-                        kubectl describe pods -l app=cicd-demo | grep -A15 "Events:" || true
-                        echo "=== Pod logs ==="
-                        kubectl logs -l app=cicd-demo --tail=50 --all-containers || true
-                        echo "=== Rolling back ==="
-                        kubectl rollout undo deployment/cicd-demo || true
-                        kubectl rollout status deployment/cicd-demo --timeout=90s || true
-                    '''
+                sh '''
+                    sed "s|image: .*|image: $REGISTRY/$IMAGE:$BUILD_NUMBER|" k8s/deployment.yaml | kubectl apply -f -
+                    kubectl apply -f k8s/service.yaml
+                    kubectl rollout status deployment/cicd-demo --timeout=90s
+                '''
                 } else {
                     echo 'Failed before deployment, so there is nothing to roll back.'
                 }
